@@ -1,5 +1,14 @@
-FROM python:3.9
+# Use the official Python image as the base image
+FROM python:3.9-slim
+
+# Set the working directory
 WORKDIR /app
-COPY app.py /app.py
-RUN pip install flask
-CMD ["python", "/app.py"]
+
+# Copy the application code
+COPY app.py /app/app.py
+
+# Install dependencies
+RUN pip install flask pytest  # Add pytest here
+
+# Command to run the application
+CMD ["python", "app.py"]
