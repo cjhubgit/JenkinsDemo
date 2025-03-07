@@ -1,29 +1,59 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_IMAGE = 'jenkinsdemo-image'
+        DOCKER_CONTAINER = 'jenkinsdemo-container'  // Fixed typo
+    }
+
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/cjhubgit/jenkinsdemo.git'
+                git branch: 'main', 
+                    url: 'https://github.com/cjhubgit/JenkinsDemo.git',
+                    credentialsId: 'github-credentials'  // Use the credentials ID, not the raw token
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t jenkinsdemo-image .'
+                script {
+                    // Ensure Docker is installed and running
+                    sh 'docker --version'
+                    // Build the Docker image
+                    sh "docker build -t ${DOCKER_IMAGE} ."
+                }
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'docker run --rm jenkinsdemo-image pytest'  // Example for Python tests
+                script {
+                    // Run tests inside the Docker container
+                    sh "docker run --rm ${DOCKER_IMAGE} pytest"  // Customize the test command as needed
+                }
             }
         }
 
         stage('Deploy to Docker Container') {
             steps {
-                sh 'docker run -d --name jenkinsdemo-container jenkinsdemo-image'
+                script {
+                    // Stop and remove any existing container with the same name
+                    sh "docker stop ${DOCKER_CONTAINER} || true"
+                    sh "docker rm ${DOCKER_CONTAINER} || true"
+                    // Run the Docker container
+                    sh "docker run -d --name ${DOCKER_CONTAINER} -p 80:5000 ${DOCKER_IMAGE}"
+                }
             }
+        }
+    }
+
+    post {
+        always {
+            // Clean up Docker containers and images (optional)
+            sh "docker stop ${DOCKER_CONTAINER} || true"
+            sh "docker rm ${DOCKER_CONTAINER} || true"
+            sh "docker rmi ${DOCKER_IMAGE} || true"
         }
     }
 }
