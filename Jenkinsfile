@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'jenkinsdemo-image'
-        DOCKER_CONTAINER = 'jenkinsdemo-container'  // Fixed typo
+        DOCKER_CONTAINER = 'jenkinsdemo-container'
     }
 
     stages {
@@ -11,7 +11,7 @@ pipeline {
             steps {
                 git branch: 'main', 
                     url: 'https://github.com/cjhubgit/JenkinsDemo.git',
-                    credentialsId: 'github-credentials'  // Use the credentials ID, not the raw token
+                    credentialsId: 'github-credentials'  // Use the correct credentials ID
             }
         }
 
@@ -30,7 +30,7 @@ pipeline {
             steps {
                 script {
                     // Run tests inside the Docker container
-                    sh "docker run --rm ${DOCKER_IMAGE} pytest"  // Customize the test command as needed
+                    sh "docker run --rm ${DOCKER_IMAGE} pytest"  // Ensure pytest is installed in the Docker image
                 }
             }
         }
